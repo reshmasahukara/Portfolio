@@ -1,6 +1,76 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Particle System for Hero
+    const canvas = document.createElement('canvas');
+    canvas.id = 'particle-canvas';
+    const hero = document.getElementById('hero');
+    if (hero) {
+        hero.insertBefore(canvas, hero.firstChild);
+        const ctx = canvas.getContext('2d');
 
-    // 1. Navbar Scroll Effect
+        let particles = [];
+        const particleCount = 80;
+
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.color = Math.random() > 0.5 ? 'rgba(139, 92, 246, 0.3)' : 'rgba(59, 130, 246, 0.3)';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        const initParticles = () => {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        };
+
+        initParticles();
+        animate();
+    }
+
+    // Navbar scroll effect
     const navbar = document.getElementById('navbar');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -10,151 +80,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Typing Effect for Hero Section
-    const typingText = document.getElementById('typing-text');
-    const roles = ['Python Developer', 'Full Stack Developer', 'Problem Solver'];
-    let roleIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typingDelay = 100;
-
-    function typeRole() {
-        if(!typingText) return;
-
-        const currentRole = roles[roleIndex];
-
-        if (isDeleting) {
-            typingText.textContent = currentRole.substring(0, charIndex - 1);
-            charIndex--;
-            typingDelay = 50;
-        } else {
-            typingText.textContent = currentRole.substring(0, charIndex + 1);
-            charIndex++;
-            typingDelay = 150;
-        }
-
-        if (!isDeleting && charIndex === currentRole.length) {
-            isDeleting = true;
-            typingDelay = 2000; // Pause at end of word
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            roleIndex = (roleIndex + 1) % roles.length;
-            typingDelay = 500; // Pause before typing next word
-        }
-
-        setTimeout(typeRole, typingDelay);
-    }
-    
-    setTimeout(typeRole, 1000); // Start typing shortly after load
-
-    // 3. Scroll Reveal Animation
-    const revealElements = document.querySelectorAll('.reveal-fade');
-    
-    const revealOptions = {
-        threshold: 0.15,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                
-                // If it's a skill category, trigger skill bar animation
-                if (entry.target.classList.contains('skill-category')) {
-                    const skillBars = entry.target.querySelectorAll('.skill-progress');
-                    skillBars.forEach(bar => {
-                        const targetWidth = bar.getAttribute('style').match(/width:\s*(\d+)%/)[1];
-                        bar.style.width = '0%'; // Reset
-                        setTimeout(() => {
-                            bar.style.width = targetWidth + '%';
-                        }, 100);
-                    });
-                }
-                
-                observer.unobserve(entry.target);
+    // Reveal animations on scroll
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+        const triggerBottom = window.innerHeight * 0.85;
+        revealElements.forEach(el => {
+            const elTop = el.getBoundingClientRect().top;
+            if (elTop < triggerBottom) {
+                el.classList.add('active');
             }
         });
-    }, revealOptions);
+    };
 
-    revealElements.forEach(el => {
-        revealObserver.observe(el);
-    });
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll(); // Initial check
 
-    // Reset skill bars on load so they animate when scrolled into view
-    document.querySelectorAll('.skill-progress').forEach(bar => {
-        bar.style.width = '0%';
-    });
-
-    // 4. Smooth Scrolling for Navigation Links
+    // Smooth scroll for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             if (targetId === '#') return;
             
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
-                const navHeight = navbar.offsetHeight;
-                const elementPosition = targetElement.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - navHeight;
-
                 window.scrollTo({
-                    top: offsetPosition,
+                    top: targetElement.offsetTop - 80,
                     behavior: 'smooth'
                 });
-
-                // Update active state
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                this.classList.add('active');
             }
         });
     });
 
-    // Highlight active nav link on scroll
-    const sections = document.querySelectorAll('section');
-    window.addEventListener('scroll', () => {
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.clientHeight;
-            if (pageYOffset >= (sectionTop - navbar.offsetHeight - 50)) {
-                current = section.getAttribute('id');
-            }
-        });
-
-        document.querySelectorAll('.nav-links a').forEach(a => {
-            a.classList.remove('active');
-            if (a.getAttribute('href') === `#${current}`) {
-                a.classList.add('active');
-            }
-        });
-    });
+    // Simple Mobile Menu Toggle
+    const menuBtn = document.querySelector('.menu-btn');
+    const navLinks = document.querySelector('.nav-links');
     
-    // 5. Contact Form Submission (UI Only)
-    const contactForm = document.getElementById('contactForm');
+    if (menuBtn && navLinks) {
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            if (navLinks.classList.contains('active')) {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.width = '100%';
+                navLinks.style.background = 'rgba(10, 10, 12, 0.95)';
+                navLinks.style.padding = '2rem';
+                navLinks.style.borderBottom = '1px solid var(--glass-border)';
+            } else {
+                navLinks.style.display = 'none';
+            }
+        });
+    }
+
+    // Form submission handling (Prevent default for demo)
+    const contactForm = document.querySelector('.contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const btn = contactForm.querySelector('button');
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = 'Sending... <i class="fas fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                btn.innerHTML = 'Message Sent! <i class="fas fa-check"></i>';
-                btn.style.background = '#10b981'; // Success green
-                contactForm.reset();
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    btn.style.background = '';
-                }, 3000);
-            }, 1500);
+            alert('Message sent successfully! (This is a demo)');
+            contactForm.reset();
         });
     }
 });
