@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartExpense - Modern Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <h1>SmartExpense</h1>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#"><span class="icon">📊</span> Dashboard</a></li>
+                    <li><a href="#"><span class="icon">💸</span> Transactions</a></li>
+                    <li><a href="#"><span class="icon">🏷️</span> Categories</a></li>
+                    <li><a href="#"><span class="icon">⚙️</span> Settings</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-btn">
+                    <span class="icon">🌙</span> Dark Mode
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <h2>Welcome back, Reshma</h2>
+                    <p id="current-date">Wednesday, March 18, 2026</p>
+                </div>
+                <div class="header-right">
+                    <button id="set-income-btn" class="btn-outline">Set Income</button>
+                    <button id="clear-all-btn" class="btn-outline">Clear All</button>
+                    <button id="open-modal-btn" class="btn-primary">+ Add Expense</button>
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <section class="summary-section">
+                <div class="card summary-card balance">
+                    <div class="card-info">
+                        <h3>Total Balance</h3>
+                        <p id="total-balance">$0.00</p>
+                    </div>
+                    <div class="card-icon">💰</div>
+                </div>
+                <div class="card summary-card income">
+                    <div class="card-info">
+                        <h3>Total Income</h3>
+                        <p id="total-income">$0.00</p>
+                    </div>
+                    <div class="card-icon">📈</div>
+                </div>
+                <div class="card summary-card expenses">
+                    <div class="card-info">
+                        <h3>Total Expenses</h3>
+                        <p id="total-expenses">$0.00</p>
+                    </div>
+                    <div class="card-icon">📉</div>
+                </div>
+            </section>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Add Expense Section (Hidden by default, shown as modal or sidebar-like panel) -->
+                <section id="add-expense-panel" class="card expense-form-card">
+                    <div class="card-header">
+                        <h3>Add New Expense</h3>
+                        <button id="close-form-btn" class="close-btn">&times;</button>
+                    </div>
+                    <form id="expense-form">
+                        <div class="form-group">
+                            <label for="expense-title">Title</label>
+                            <input type="text" id="expense-title" placeholder="e.g., Grocery Shopping" required>
+                            <span class="error-msg" id="title-error"></span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expense-amount">Amount</label>
+                                <input type="number" id="expense-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                <span class="error-msg" id="amount-error"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-category">Category</label>
+                                <select id="expense-category" required>
+                                    <option value="" disabled selected>Select Category</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Bills">Bills</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                                <span class="error-msg" id="category-error"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-date">Date</label>
+                            <input type="date" id="expense-date" required>
+                            <span class="error-msg" id="date-error"></span>
+                        </div>
+                        <button type="submit" class="btn-full">Add Expense</button>
+                    </form>
+                </section>
+
+                <!-- Transactions Table List -->
+                <section class="card transactions-card">
+                    <div class="card-header">
+                        <h3>Recent Transactions</h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-body">
+                                <!-- Expenses will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state">
+                        <div class="empty-icon">📂</div>
+                        <p>No transactions yet. Add your first expense!</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Set Income Modal -->
+    <div id="income-modal" class="modal">
+        <div class="modal-content">
+            <h3>Set Monthly Income</h3>
+            <p>Enter your total monthly income to calculate your balance.</p>
+            <div class="form-group">
+                <input type="number" id="income-amount-input" placeholder="Enter amount" step="0.01" min="0">
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-income" class="btn-outline">Cancel</button>
+                <button id="save-income" class="btn-primary">Save Income</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h3>Are you sure?</h3>
+            <p>This will permanently delete all your expense records. This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="cancel-clear" class="btn-outline">Cancel</button>
+                <button id="confirm-clear" class="btn-danger">Yes, Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
